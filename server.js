@@ -94,6 +94,7 @@ app.get('/todos', (req, res) => {
   db.todos.findAll({where: where})
   .then((cur) => {
       res.json(cur);
+  })
   .catch((err) => {
     res.status(500).send();
   });

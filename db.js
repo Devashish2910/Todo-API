@@ -1,8 +1,20 @@
 const Sequelize = require('sequelize');
-const sequelize = new Sequelize(undefined, undefined, undefined, {
-  dialect: 'sqlite',
-  storage: __dirname + '/data/todo-api.sqlite'
-});
+const env = process.env.NODE_ENV || 'development';
+let sequelize;
+
+if(env === 'production') {
+  // on heroku environment
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: 'sqlite'
+  });
+} else {
+  // local environment
+  sequelize = new Sequelize(undefined, undefined, undefined, {
+    dialect: 'sqlite',
+    storage: __dirname + '/data/todo-api.sqlite'
+  });
+}
+
 
 let db = {};
 

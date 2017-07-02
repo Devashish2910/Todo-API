@@ -213,6 +213,14 @@ app.delete('/todos/:id', (req, res) => {
   // convert id into integer
   const id = parseInt(req.params.id);
 
+  db.todos.destroy({where:{id: id}})
+  .then((cur) => {
+    res.send("Deleted Sucessfully");
+  })
+  .catch((err) => {
+    res.status(500).send();
+  });
+/*
   // find object in data structure
   const cur = _.findWhere(todos, {id: id});
   if(cur !== undefined) {
@@ -220,8 +228,7 @@ app.delete('/todos/:id', (req, res) => {
     res.json(cur);
   } else {
     res.status(404).send("No data found.");
-  }
-
+*/
 });
 
 //

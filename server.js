@@ -50,22 +50,23 @@ app.post('/todos', (req, res) => {
 
 // GET request for showing data to user (R - Read Operation)
 app.get('/todos', (req, res) => {
-  const allTodos = todos;
+  let allTodos = todos;
+  const queryPram = req.query;
 
   // check if has query parameter 'status'
-  if(req.query.hasOwnProperty('status') && (req.query.status === 'unfinished' || req.query.status === 'false')) {
+  if(queryPram.hasOwnProperty('status') && (queryPram.status === 'unfinished' || queryPram.status === 'false')) {
     // return unfinised/false todos
     allTodos = _.where(allTodos, {status: false});
-  } else if (req.query.hasOwnProperty('status') && (req.query.status === 'finished' || req.query.status === 'true') {
+  } else if (queryPram.hasOwnProperty('status') && (queryPram.status === 'finished' || queryPram.status === 'true')) {
     // return finished/true todos
     allTodos = _.where(allTodos, {status: true});
   }
 
   // check if has query parameter 'q'
-  if(req.query.hasOwnProperty('q')) {
+  if(queryPram.hasOwnProperty('q')) {
     // return unfinised/false todos
     allTodos = _.filter(allTodos, (cur) => {
-      return cur.description.toLowerCase().indexOf(req.query.q.trim().toLowerCase()) > -1;
+      return cur.description.toLowerCase().indexOf(queryPram.q.trim().toLowerCase()) > -1;
     });
   }
 
@@ -97,5 +98,5 @@ app.get('/todos/:id', (req, res) => {
 
 // initialize port for app
 app.listen(port, () => {
-  console.log("Application Stated On Prot:" + port);
+  console.log("Application Stated On Port:" + port);
 });

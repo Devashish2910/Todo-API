@@ -86,7 +86,7 @@ app.get('/todos', (req, res) => {
   // check if has query parameter 'q'
   if(queryPram.hasOwnProperty('q')) {
     where.description = {
-      $like: `%${queryPram.q}%`
+      $iLike: `%${queryPram.q}%`
     };
   }
 

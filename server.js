@@ -1,3 +1,6 @@
+// database connection
+const db = require("./db.js");
+
 // express module initialization
 const express = require("express");
 const app = express();
@@ -28,6 +31,25 @@ const createId = function() {
 
 // POST request for taking data from user (C - Create Operation)
 app.post('/todos', (req, res) => {
+  // pick valid values from user
+  const userData = _.pick(req.body, 'description', 'status');
+
+  // check if 'description' & 'status' is valid or send 400
+  if(!_.isString(userData.description) || userData.description.trim().length === 0) {
+    res.status(400).send("Sorry, you haven't passed valid data.");
+  }
+
+  //userData.description = userData.desdescription.trim();
+  console.log(userData);
+  // add data to database
+  db.todos.create(userData)
+  .then((cur) => {
+    res.status(200).json(cur.toJSON());
+  })
+  .catch((err) => {
+    res.status(400).json(err);
+  });
+/*
   // pick valid object vaulues from user
   const userData = _.pick(req.body, 'description', 'status');
 
@@ -46,6 +68,7 @@ app.post('/todos', (req, res) => {
 
   // send response back to client
   res.json(userData);
+*/
 });
 
 // GET request for showing data to user (R - Read Operation)
@@ -155,7 +178,10 @@ app.delete('/todos/:id', (req, res) => {
 
 });
 
-// initialize port for app
-app.listen(port, () => {
-  console.log("Application Stated On Port:" + port);
+//
+db.sequelize.sync().then(() => {
+  // initialize port for app
+  app.listen(port, () => {
+    console.log("Application Stated On Port:" + port);
+  });
 });

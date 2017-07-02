@@ -93,6 +93,51 @@ app.get('/todos/:id', (req, res) => {
   } else {
     res.status(404).send("No data found.");
   }
+});
+
+// PUT request for editing vaulues
+app.put('/todos/:id', (req, res) => {
+  // convert id to integert
+  const id = parseInt(req.params.id);
+
+  // get data from data structure
+  let cur = _.findWhere(todos, {id: id});
+
+  // user Input
+  let userInput= {};
+  // pick only necessary information
+  const userData = _.pick(req.body, 'description', 'status');
+
+  // update description
+  if(req.body.hasOwnProperty('description') && _.isString(req.body.description) && req.body.description.trim().length > 0) {
+    // update the value
+     userInput.description = req.body.description.trim();
+  } else if (req.body.hasOwnProperty('description')) {
+    // return 400
+    res.status(400).send("Not appropriate value");
+  }
+
+  // update status
+  if(req.body.hasOwnProperty('status') && _.isBoolean(req.body.status)) {
+    // update the value
+     userInput.status = req.body.status;
+  } else if (req.body.hasOwnProperty('status')) {
+    // return 400
+    res.status(400).send("Not appropriate value");
+  }
+
+  // update the date edited
+  userInput.updatedOn = new Date().toString();
+
+  // change element
+  if(cur !== undefined) {
+    _.extend(cur, userInput);
+    res.json(cur);
+  } else {
+    res.status(404).send("No data found");
+  }
+
+
 
 });
 

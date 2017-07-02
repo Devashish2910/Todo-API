@@ -95,7 +95,7 @@ app.get('/todos/:id', (req, res) => {
   }
 });
 
-// PUT request for editing vaulues
+// PUT request for editing vaulues (U - Update Operation)
 app.put('/todos/:id', (req, res) => {
   // convert id to integert
   const id = parseInt(req.params.id);
@@ -132,12 +132,26 @@ app.put('/todos/:id', (req, res) => {
   // change element
   if(cur !== undefined) {
     _.extend(cur, userInput);
+    cur.status = "Deleted";
     res.json(cur);
   } else {
     res.status(404).send("No data found");
   }
+});
 
+// Delete element (D - Delete Operation)
+app.delete('/todos/:id', (req, res) => {
+  // convert id into integer
+  const id = parseInt(req.params.id);
 
+  // find object in data structure
+  const cur = _.findWhere(todos, {id: id});
+  if(cur !== undefined) {
+    todos = _.without(todos, cur);
+    res.json(cur);
+  } else {
+    res.status(404).send("No data found.");
+  }
 
 });
 

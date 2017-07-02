@@ -73,6 +73,32 @@ app.post('/todos', (req, res) => {
 
 // GET request for showing data to user (R - Read Operation)
 app.get('/todos', (req, res) => {
+  const queryPram = req.query;
+  let where = {};
+
+  // check if has query parameter 'status'
+  if(queryPram.hasOwnProperty('status') && (queryPram.status === 'unfinished' || queryPram.status === 'false')) {
+    where.status = {$not: true};
+  } else if(queryPram.hasOwnProperty('status') && (queryPram.status === 'finished' || queryPram.status === 'true')) {
+    where.status = {$not: false};
+  }
+
+  // check if has query parameter 'q'
+  if(queryPram.hasOwnProperty('q')) {
+    where.description = {
+      $like: `%${queryPram.q}%`
+    };
+  }
+
+  // find in database
+  db.todos.findAll({where: where})
+  .then((cur) => {
+      res.json(cur);
+  .catch((err) => {
+    res.status(500).send();
+  });
+
+/*
   let allTodos = todos;
   const queryPram = req.query;
 
@@ -99,11 +125,29 @@ app.get('/todos', (req, res) => {
   } else {
     res.status(404).send("No data found.");
   }
-
+*/
 });
 
 // GET request for showing data by id
 app.get('/todos/:id', (req, res) => {
+  // convert id into interger
+  const id = parseInt(req.params.id);
+
+  // find from database
+  db.todos.findById(id)
+  .then((cur) => {
+    //res.send(typeof cur);
+    if(!!cur){ // !! if object comes with data or not
+      res.json(cur.toJSON());
+    } else {
+      res.status(404).send("No data found");
+    }
+
+  })
+  .catch((err) => {
+    res.status(500).send();
+  });
+  /*
   // convert parameter to int
   const id = parseInt(req.params.id);
 
@@ -116,6 +160,7 @@ app.get('/todos/:id', (req, res) => {
   } else {
     res.status(404).send("No data found.");
   }
+  */
 });
 
 // PUT request for editing vaulues (U - Update Operation)

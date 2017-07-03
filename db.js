@@ -5,7 +5,7 @@ let sequelize;
 if(env === 'production') {
   // on heroku environment
   sequelize = new Sequelize(process.env.DATABASE_URL, {
-    dialect: 'sqlite'
+    dialect: 'postgres'
   });
 } else {
   // local environment

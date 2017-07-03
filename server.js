@@ -255,6 +255,25 @@ app.delete('/todos/:id', (req, res) => {
 */
 });
 
+/*------------------------------------USERS SECTION START-----------------------------------------*/
+
+// POST request for User Create
+app.post('/users', (req, res) => {
+  // take only email and password
+  const userData = _.pick(req.body, 'email', 'password');
+
+  // add it to database
+  db.users.create(userData)
+  .then(cur => {
+    // successful entry
+    res.status(200).send(`User added sucessfully`);
+  })
+  .catch(err => {
+    // something went wrong
+    res.status(500).send(err);
+  });
+});
+
 //
 db.sequelize.sync().then(() => {
   // initialize port for app

@@ -5,6 +5,9 @@ const db = require("./db.js");
 const express = require("express");
 const app = express();
 
+// bcrypto module
+const bcrypto = require("bcryptjs");
+
 // body-parser module initialization
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
@@ -265,8 +268,7 @@ app.post('/users', (req, res) => {
   // add it to database
   db.users.create(userData)
   .then(cur => {
-    // successful entry
-    res.status(200).send(`User added sucessfully`);
+    res.json(cur.toJSON());
   })
   .catch(err => {
     // something went wrong
@@ -278,27 +280,13 @@ app.post('/users', (req, res) => {
 app.post('/users/login', (req, res) => {
   const body = _.pick(req.body, 'email', 'password');
 
-  // check validations
-  if(body.hasOwnProperty('email') && body.hasOwnProperty('password') && _.isString(body.email) && _.isString(body.password)) {
-    // check if it's in database
-    const where = {
-      email: body.email,
-      password: body.password
-    }
-    db.users.findOne({where: where})
-    .then(cur => {
-      res.status(200).send(`Sucessful Login with ${cur.email}`);
-    })
-    .catch(cur => {
-      res.status(404).send('No data found');
-    })
-
-    // return back
-  } else {
-    // send bad value error
-    res.status(400).send('You have not entered appropriet credentials.')
-  }
-})
+  db.users.authentication(body).then((cur) => {
+    res.json(cur.toJSON());
+  })
+  .catch(() => {
+    res.status(401).send();
+  });
+});
 //
 db.sequelize.sync().then(() => {
   // initialize port for app

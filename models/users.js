@@ -41,9 +41,39 @@ module.exports = (sequelize, DataTypes) => {
        }
      }
    },
-   fdfb: {
+   classMethods: {
+     authentication: function(body) {
+       return new Promise((resolve, reject) => {
+         // check validations
+         if(!_.isString(body.email) && !_.isString(body.password)) {
+           // return 400
+           return reject();
+         }
 
-   }
+         // check in database
+         users.findOne({
+           where: {
+             email: body.email
+           }
+         })
+         .then(cur => {
+           if(!cur || !bcrypt.compareSync(body.password, cur.get('hashed_password'))) {
+             return reject();
+           }
+           resolve(cur);
+         })
+         .catch(cur => {
+           return reject();
+         });
+       });
+     }
+   },
+   instanceMethods: {
+			toPublicJSON: function (cur) {
+				var json = cur.toJSON();
+				return _.pick(json, 'id', 'email', 'createdAt', 'updatedAt');
+			}
+		}
   }
 );
 };

@@ -195,6 +195,29 @@ app.put('/todos/:id', (req, res) => {
     res.status(400).send("Not appropriate value");
   }
 
+  // update in database
+  db.todos.findById(id)
+  .then(cur => {
+    // update with userData
+    cur.update(userData)
+    .then(cur => {
+      // successful update
+      if(!!cur) {
+        res.status(200).json(cur);
+      } else {
+        res.sattus(400).send();
+      }
+    })
+    .catch(err => {
+      // no data found
+      res,status(404).send(err);
+    })
+  })
+  .catch(err => {
+    // something weird happened
+    res.status(500).send(err);
+  })
+/*
   // update the date edited
   userInput.updatedOn = new Date().toString();
 
@@ -206,6 +229,7 @@ app.put('/todos/:id', (req, res) => {
   } else {
     res.status(404).send("No data found");
   }
+*/
 });
 
 // Delete element (D - Delete Operation)

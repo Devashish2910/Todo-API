@@ -21,5 +21,5 @@ let db = {};
 db.todos = sequelize.import(__dirname + '/models/todos.js');
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
-
+db.env = env;
 module.exports = db;

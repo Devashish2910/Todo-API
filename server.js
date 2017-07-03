@@ -270,12 +270,37 @@ app.post('/users', (req, res) => {
   })
   .catch(err => {
     // something went wrong
-    res.status(500).send(err);
+    res.status(400).send(err);
   });
 });
 
+// POST request for User Login
+app.post('/users/login', (req, res) => {
+  const body = _.pick(req.body, 'email', 'password');
+
+  // check validations
+  if(body.hasOwnProperty('email') && body.hasOwnProperty('password') && _.isString(body.email) && _.isString(body.password)) {
+    // check if it's in database
+    const where = {
+      email: body.email,
+      password: body.password
+    }
+    db.users.findOne({where: where})
+    .then(cur => {
+      res.status(200).send(`Sucessful Login with ${cur.email}`);
+    })
+    .catch(cur => {
+      res.status(404).send('No data found');
+    })
+
+    // return back
+  } else {
+    // send bad value error
+    res.status(400).send('You have not entered appropriet credentials.')
+  }
+})
 //
-db.sequelize.sync().then(() => {
+db.sequelize.sync({force:true}).then(() => {
   // initialize port for app
   app.listen(port, () => {
     console.log("Application Stated On Port:" + port);

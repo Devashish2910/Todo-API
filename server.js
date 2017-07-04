@@ -4,6 +4,9 @@ const db = require("./db.js");
 // authentication
 let auth = require('./auth.js');
 
+// token
+let token = require('./token.js');
+
 // express module initialization
 const express = require("express");
 const app = express();
@@ -284,7 +287,8 @@ app.post('/users/login', (req, res) => {
   const body = _.pick(req.body, 'email', 'password');
 
   auth(body).then((user) => {
-    res.status(200).send(JSON.stringify({id: user.id, email: user.email}, null, 4));
+    console.log(user.id);
+    res.header('Auth', token(user.id, 'authentication')).status(200).send(JSON.stringify({id: user.id, email: user.email}, null, 4));
   }).catch(()=>{
     res.status(401).send();
   });
@@ -301,7 +305,7 @@ app.post('/users/login', (req, res) => {
 
 });
 //
-db.sequelize.sync({force=true}).then(() => {
+db.sequelize.sync().then(() => {
   // initialize port for app
   app.listen(port, () => {
     console.log("Application Stated On Port:" + port);

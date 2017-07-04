@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const db = require('./db.js');
 const _ = require('underscore');
+const crypto = require('crypto-js');
+const jwt = require('jsonwebtoken');
 
 module.exports = function(body) {
   return new Promise((resolve, reject) => {

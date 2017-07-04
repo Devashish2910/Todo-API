@@ -1,6 +1,9 @@
 // database connection
 const db = require("./db.js");
 
+// authentication
+let auth = require('./auth.js');
+
 // express module initialization
 const express = require("express");
 const app = express();
@@ -280,15 +283,25 @@ app.post('/users', (req, res) => {
 app.post('/users/login', (req, res) => {
   const body = _.pick(req.body, 'email', 'password');
 
-  db.users.authentication(body).then((cur) => {
-    res.json(cur.toJSON());
-  })
-  .catch(() => {
+  auth(body).then((user) => {
+    res.status(200).send(JSON.stringify({id: user.id, email: user.email}, null, 4));
+  }).catch(()=>{
     res.status(401).send();
   });
+  // db.users.findOne({where: { email: body.email}}).then((user) => {
+  //   if (bcrypto.compareSync(body.password, user.get('hashed_password'))) {
+  //       res.send(user.toJSON());
+  //   } else {
+  //     res.status(401).send('Not valied credentials.');
+  //   }
+  //
+  // }).catch(() => {
+  //   res.status(404).send('No user found');
+  // })
+
 });
 //
-db.sequelize.sync().then(() => {
+db.sequelize.sync({force=true}).then(() => {
   // initialize port for app
   app.listen(port, () => {
     console.log("Application Stated On Port:" + port);

@@ -288,7 +288,8 @@ app.post('/users/login', (req, res) => {
 
   auth(body).then((user) => {
     console.log(user.id);
-    res.header('Auth', token(user.id, 'authentication')).status(200).send(JSON.stringify({id: user.id, email: user.email}, null, 4));
+    const token = token(user.id, 'authentication');
+    res.header('Auth', token).status(200).send(JSON.stringify({id: user.id, email: user.email}, null, 4));
   }).catch(()=>{
     res.status(401).send();
   });

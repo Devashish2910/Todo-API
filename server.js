@@ -5,7 +5,10 @@ const db = require("./db.js");
 let auth = require('./auth.js');
 
 // token
-let token = require('./token.js');
+let token = require('./token.js')();
+
+// middleware
+const middleware = require('./middleware.js')();
 
 // express module initialization
 const express = require("express");
@@ -27,19 +30,13 @@ const port = process.env.PORT || 3000;
 // data structure initialization
 let todos = [];
 
-// function for creating id
-const createId = function() {
-  if(todos.length === 0) {
-    // return 1
-    return 1;
-  } else {
-    // calculate id
-    return todos[todos.length - 1].id + 1;
-  }
-};
+// API Root
+app.get('/',(req, res) => {
+  res.status(200).send("To do API root");
+});
 
 // POST request for taking data from user (C - Create Operation)
-app.post('/todos', (req, res) => {
+app.post('/todos', middleware.requireAuthentication,(req, res) => {
   // pick valid values from user
   const userData = _.pick(req.body, 'description', 'status');
 
@@ -49,14 +46,29 @@ app.post('/todos', (req, res) => {
   }
 
   //userData.description = userData.desdescription.trim();
-  console.log(userData);
+
   // add data to database
+  // db.todos.create(userData)
+  // .then((cur) => {
+  //   res.status(200).json(cur.toJSON());
+  // })
+  // .catch((err) => {
+  //   res.status(400).json(err);
+  // });
+
   db.todos.create(userData)
-  .then((cur) => {
-    res.status(200).json(cur.toJSON());
+  .then((todo) => {
+    //Sucessfully inserted
+    req.user.addTodo(todo)
+    .then(() => {
+      todo.reload()
+      .then((cur) => {
+        res.status(200).json(cur.toJSON());
+      });
+    });
   })
   .catch((err) => {
-    res.status(400).json(err);
+    res.send(err);
   });
 /*
   // pick valid object vaulues from user
@@ -81,7 +93,7 @@ app.post('/todos', (req, res) => {
 });
 
 // GET request for showing data to user (R - Read Operation)
-app.get('/todos', (req, res) => {
+app.get('/todos', middleware.requireAuthentication,(req, res) => {
   const queryPram = req.query;
   let where = {};
 
@@ -98,6 +110,8 @@ app.get('/todos', (req, res) => {
       $iLike: `%${queryPram.q}%`
     };
   }
+  // go to middle where and take users id from Users table
+  where.userId = req.user.get('id');
 
   // find in database
   db.todos.findAll({where: where})
@@ -139,12 +153,14 @@ app.get('/todos', (req, res) => {
 });
 
 // GET request for showing data by id
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', middleware.requireAuthentication, (req, res) => {
   // convert id into interger
   const id = parseInt(req.params.id);
-
+  let where = {};
+  where.id = id;
+  where.userId = req.user.get('id');
   // find from database
-  db.todos.findById(id)
+  db.todos.findOne({where: where})
   .then((cur) => {
     //res.send(typeof cur);
     if(!!cur){ // !! if object comes with data or not
@@ -174,9 +190,11 @@ app.get('/todos/:id', (req, res) => {
 });
 
 // PUT request for editing vaulues (U - Update Operation)
-app.put('/todos/:id', (req, res) => {
+app.put('/todos/:id', middleware.requireAuthentication, (req, res) => {
   // convert id to integert
   const id = parseInt(req.params.id);
+  let where = {};
+  where.id = id;
 
   // get data from data structure
   let cur = _.findWhere(todos, {id: id});
@@ -204,8 +222,9 @@ app.put('/todos/:id', (req, res) => {
     res.status(400).send("Not appropriate value");
   }
 
+  where.userId = req.user.get('id');
   // update in database
-  db.todos.findById(id)
+  db.todos.findOne({where: where})
   .then(cur => {
     // update with userData
     cur.update(userData)
@@ -242,16 +261,19 @@ app.put('/todos/:id', (req, res) => {
 });
 
 // Delete element (D - Delete Operation)
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', middleware.requireAuthentication,(req, res) => {
   // convert id into integer
   const id = parseInt(req.params.id);
+  let where = {};
+  where.id = id;
+  where.userId = req.user.get('id');
 
-  db.todos.destroy({where:{id: id}})
+  db.todos.destroy({where: where})
   .then((cur) => {
     res.send("Deleted Sucessfully");
   })
   .catch((err) => {
-    res.status(500).send();
+    res.status(404).send('No data found');
   });
 /*
   // find object in data structure
@@ -266,7 +288,7 @@ app.delete('/todos/:id', (req, res) => {
 
 /*------------------------------------USERS SECTION START-----------------------------------------*/
 
-// POST request for User Create
+// POST request for User Create (SIGN UP)
 app.post('/users', (req, res) => {
   // take only email and password
   const userData = _.pick(req.body, 'email', 'password');
@@ -282,14 +304,12 @@ app.post('/users', (req, res) => {
   });
 });
 
-// POST request for User Login
+// POST request for User Login (LOG IN)
 app.post('/users/login', (req, res) => {
   const body = _.pick(req.body, 'email', 'password');
 
   auth(body).then((user) => {
-    console.log(user.id);
-    const token = token(user.id, 'authentication');
-    res.header('Auth', token).status(200).send(JSON.stringify({id: user.id, email: user.email}, null, 4));
+    res.header('Auth', token.createToken(user.id, 'authentication')).status(200).send(JSON.stringify({id: user.id, email: user.email}, null, 4));
   }).catch(()=>{
     res.status(401).send();
   });

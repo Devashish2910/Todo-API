@@ -307,10 +307,22 @@ app.post('/users', (req, res) => {
 // POST request for User Login (LOG IN)
 app.post('/users/login', (req, res) => {
   const body = _.pick(req.body, 'email', 'password');
+  let userInst;
 
   auth(body).then((user) => {
-    res.header('Auth', token.createToken(user.id, 'authentication')).status(200).send(JSON.stringify({id: user.id, email: user.email}, null, 4));
-  }).catch(()=>{
+    const generatedToken = token.createToken(user.id, 'authentication');
+    //console.log(generatedToken);
+    //tokenInst = generatedToken;
+    userInst = user;
+
+    db.token.create({
+       token: generatedToken
+     }).then(tokenInstance => {
+       res.header('Auth', tokenInstance.get('token')).status(200).send(JSON.stringify({id: userInst.id, email: userInst.email}, null, 4));
+     });
+    //res.header('Auth', generatedToken).status(200).send(JSON.stringify({id: user.id, email: user.email}, null, 4));
+  })
+  .catch(()=>{
     res.status(401).send();
   });
   // db.users.findOne({where: { email: body.email}}).then((user) => {
@@ -325,8 +337,18 @@ app.post('/users/login', (req, res) => {
   // })
 
 });
+
+// DELETE users/login
+app.delete('/users/login', middleware.requireAuthentication, (req, res) => {
+  req.token.destroy().then(() => {
+    res.status(204).send();
+  })
+  .catch(() => {
+    res.status(500).send();
+  });
+});
 //
-db.sequelize.sync({force: true}).then(() => {
+db.sequelize.sync().then(() => {
   // initialize port for app
   app.listen(port, () => {
     console.log("Application Stated On Port:" + port);

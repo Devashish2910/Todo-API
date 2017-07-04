@@ -20,9 +20,14 @@ let db = {};
 
 db.todos = sequelize.import(__dirname + '/models/todos.js');
 db.users = sequelize.import(__dirname + '/models/users.js');
+db.token = sequelize.import(__dirname + '/models/token.js');
+
 db.todos.belongsTo(db.users);
 db.users.hasMany(db.todos);
+
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
+
 db.env = env;
+
 module.exports = db;

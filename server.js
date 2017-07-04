@@ -326,7 +326,7 @@ app.post('/users/login', (req, res) => {
 
 });
 //
-db.sequelize.sync().then(() => {
+db.sequelize.sync({force: true}).then(() => {
   // initialize port for app
   app.listen(port, () => {
     console.log("Application Stated On Port:" + port);

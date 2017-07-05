@@ -38,7 +38,6 @@ module.exports = function() {
         //console.log(typeof tokenData.id + " " + tokenData.id);
                 db.users.findById(parseInt(tokenData.id)).then(user => {
                   if(user) {
-                    //console.log(user);
                     resolve(user);
                   } else {
                     reject();

@@ -44,18 +44,6 @@ app.post('/todos', middleware.requireAuthentication,(req, res) => {
   if(!_.isString(userData.description) || userData.description.trim().length === 0) {
     res.status(400).send("Sorry, you haven't passed valid data.");
   }
-
-  //userData.description = userData.desdescription.trim();
-
-  // add data to database
-  // db.todos.create(userData)
-  // .then((cur) => {
-  //   res.status(200).json(cur.toJSON());
-  // })
-  // .catch((err) => {
-  //   res.status(400).json(err);
-  // });
-
   db.todos.create(userData)
   .then((todo) => {
     //Sucessfully inserted
@@ -70,26 +58,6 @@ app.post('/todos', middleware.requireAuthentication,(req, res) => {
   .catch((err) => {
     res.send(err);
   });
-/*
-  // pick valid object vaulues from user
-  const userData = _.pick(req.body, 'description', 'status');
-
-  // add id of that data
-  userData.id = createId();
-  userData.description = userData.description.trim();
-  userData.createdDate = new Date().toString();
-
-  // check if 'description' & 'status' is valid or send 400
-  if(!_.isString(userData.description) || !_.isBoolean(userData.status) || userData.description.length === 0) {
-    res.status(400).send("Sorry, you haven't passed valid data.");
-  }
-
-  // add object to the data structure
-  todos.push(userData);
-
-  // send response back to client
-  res.json(userData);
-*/
 });
 
 // GET request for showing data to user (R - Read Operation)
@@ -121,35 +89,6 @@ app.get('/todos', middleware.requireAuthentication,(req, res) => {
   .catch((err) => {
     res.status(500).send();
   });
-
-/*
-  let allTodos = todos;
-  const queryPram = req.query;
-
-  // check if has query parameter 'status'
-  if(queryPram.hasOwnProperty('status') && (queryPram.status === 'unfinished' || queryPram.status === 'false')) {
-    // return unfinised/false todos
-    allTodos = _.where(allTodos, {status: false});
-  } else if (queryPram.hasOwnProperty('status') && (queryPram.status === 'finished' || queryPram.status === 'true')) {
-    // return finished/true todos
-    allTodos = _.where(allTodos, {status: true});
-  }
-
-  // check if has query parameter 'q'
-  if(queryPram.hasOwnProperty('q')) {
-    // return unfinised/false todos
-    allTodos = _.filter(allTodos, (cur) => {
-      return cur.description.toLowerCase().indexOf(queryPram.q.trim().toLowerCase()) > -1;
-    });
-  }
-
-  // send data back
-  if(allTodos.length > 0) {
-    res.json(allTodos);
-  } else {
-    res.status(404).send("No data found.");
-  }
-*/
 });
 
 // GET request for showing data by id
@@ -162,7 +101,7 @@ app.get('/todos/:id', middleware.requireAuthentication, (req, res) => {
   // find from database
   db.todos.findOne({where: where})
   .then((cur) => {
-    //res.send(typeof cur);
+
     if(!!cur){ // !! if object comes with data or not
       res.json(cur.toJSON());
     } else {
@@ -173,20 +112,6 @@ app.get('/todos/:id', middleware.requireAuthentication, (req, res) => {
   .catch((err) => {
     res.status(500).send();
   });
-  /*
-  // convert parameter to int
-  const id = parseInt(req.params.id);
-
-  // check if available or send 404
-  const data = _.findWhere(todos, {id: id});
-
-  //send back to user
-  if(data !== undefined) {
-    res.json(data);
-  } else {
-    res.status(404).send("No data found.");
-  }
-  */
 });
 
 // PUT request for editing vaulues (U - Update Operation)
@@ -245,19 +170,6 @@ app.put('/todos/:id', middleware.requireAuthentication, (req, res) => {
     // something weird happened
     res.status(500).send(err);
   })
-/*
-  // update the date edited
-  userInput.updatedOn = new Date().toString();
-
-  // change element
-  if(cur !== undefined) {
-    _.extend(cur, userInput);
-    cur.status = "Deleted";
-    res.json(cur);
-  } else {
-    res.status(404).send("No data found");
-  }
-*/
 });
 
 // Delete element (D - Delete Operation)
@@ -275,15 +187,6 @@ app.delete('/todos/:id', middleware.requireAuthentication,(req, res) => {
   .catch((err) => {
     res.status(404).send('No data found');
   });
-/*
-  // find object in data structure
-  const cur = _.findWhere(todos, {id: id});
-  if(cur !== undefined) {
-    todos = _.without(todos, cur);
-    res.json(cur);
-  } else {
-    res.status(404).send("No data found.");
-*/
 });
 
 /*------------------------------------USERS SECTION START-----------------------------------------*/
@@ -311,30 +214,17 @@ app.post('/users/login', (req, res) => {
 
   auth(body).then((user) => {
     const generatedToken = token.createToken(user.id, 'authentication');
-    //console.log(generatedToken);
-    //tokenInst = generatedToken;
     userInst = user;
-
     db.token.create({
        token: generatedToken
      }).then(tokenInstance => {
        res.header('Auth', tokenInstance.get('token')).status(200).send(JSON.stringify({id: userInst.id, email: userInst.email}, null, 4));
      });
-    //res.header('Auth', generatedToken).status(200).send(JSON.stringify({id: user.id, email: user.email}, null, 4));
+
   })
   .catch(()=>{
     res.status(401).send();
   });
-  // db.users.findOne({where: { email: body.email}}).then((user) => {
-  //   if (bcrypto.compareSync(body.password, user.get('hashed_password'))) {
-  //       res.send(user.toJSON());
-  //   } else {
-  //     res.status(401).send('Not valied credentials.');
-  //   }
-  //
-  // }).catch(() => {
-  //   res.status(404).send('No user found');
-  // })
 
 });
 
@@ -347,7 +237,8 @@ app.delete('/users/login', middleware.requireAuthentication, (req, res) => {
     res.status(500).send();
   });
 });
-//
+
+// app listening
 db.sequelize.sync().then(() => {
   // initialize port for app
   app.listen(port, () => {

@@ -3,7 +3,6 @@ const _ = require('underscore');
 
 module.exports = (sequelize, DataTypes) => {
     return sequelize.define('token', {
-
         token: {
             type: DataTypes.VIRTUAL,
             allowNull: false,

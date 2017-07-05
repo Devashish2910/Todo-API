@@ -3,7 +3,6 @@ const db = require('./db.js');
 const _ = require('underscore');
 const crypto = require('crypto-js');
 
-
 module.exports = function(body) {
   return new Promise((resolve, reject) => {
     db.users.findOne({where: { email: body.email}}).then((user) => {
@@ -18,4 +17,4 @@ module.exports = function(body) {
       reject();
     });
   });
-}
+};

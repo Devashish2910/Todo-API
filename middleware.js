@@ -12,9 +12,6 @@ module.exports = function() {
           }
         })
         .then(tokenInstance => {
-          // if(!tokenInstance) {
-          //   res.status(404).send('No token found');
-          // }
           req.token = tokenInstance;
           // custom method
           token.findByToken(requestHeader)

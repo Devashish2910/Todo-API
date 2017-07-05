@@ -9,7 +9,6 @@
   "author": "Devashish",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^1.0.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.17.2",
     "crypto-js": "^3.1.9-1",

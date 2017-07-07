@@ -10,7 +10,7 @@ module.exports = function(body) {
         //let publicDetails = user.toJSON();
         //publicDetails = _.pick(publicDetails, 'id', 'email');
         resolve(user);
-      } else {
+      } else { 
         reject();
       }
     }).catch(() => {

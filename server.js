@@ -180,12 +180,23 @@ app.delete('/todos/:id', middleware.requireAuthentication,(req, res) => {
   where.id = id;
   where.userId = req.user.get('id');
 
-  db.todos.destroy({where: where})
-  .then((cur) => {
-    res.send("Deleted Sucessfully");
+  db.todos.findOne({where: { id: id, userId: req.user.get('id')}}).
+  then(cur => {
+    if(cur !== null) {
+      db.todos.destroy({where: { id: id, userId: req.user.get('id')}})
+      .then((cur) => {
+          res.send("Deleted Sucessfully");
+      })
+      .catch((err) => {
+        res.status(500).send('Something went wrong.');
+      });
+    } else {
+      res.status(404).send('No data found.');
+    }
+
   })
-  .catch((err) => {
-    res.status(404).send('No data found');
+  .catch(() => {
+    res.status(500).send('Something went wrong.');
   });
 });
 
